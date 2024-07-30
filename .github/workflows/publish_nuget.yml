@@ -32,7 +32,7 @@ jobs:
     - name: Run tests
       run: dotnet test --configuration Release --no-build
 
-    - name: Bump version and create tag
+    - name: Bump version
       id: bump_version
       run: |
         dotnet tool install --global nbgv
