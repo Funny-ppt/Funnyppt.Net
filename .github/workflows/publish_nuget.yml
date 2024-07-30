@@ -33,16 +33,16 @@ jobs:
       run: dotnet test --configuration Release --no-build
 
     - name: Bump version
-      id: bump_version
-      run: |
-        dotnet tool install --global nbgv
-        export PATH="$PATH:/home/runner/.dotnet/tools"
-        nbgv get-version
-        VERSION=$(nbgv get-version -v AssemblyInformationalVersion)
-        echo "VERSION=$VERSION" >> $GITHUB_ENV
+      uses: dotnet/nbgv@master
+      with:
+          setAllVars: true
+          
+   # - name: Display version
+   #   run: |
+   #     echo "NBGV_SemVer2 $NBGV_SemVer2"
 
     - name: Pack NuGet package
-      run: dotnet pack --configuration Release /p:PackageVersion=${{ env.VERSION }} --output ./nupkg
+      run: dotnet pack --configuration Release /p:PackageVersion=$NBGV_AssemblyInformationalVersion --output ./nupkg
 
     - name: Publish NuGet package
       run: dotnet nuget push ./nupkg/*.nupkg -k ${{ secrets.NUGET_API_KEY }} -s https://api.nuget.org/v3/index.json
