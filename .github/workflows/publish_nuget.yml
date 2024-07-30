@@ -40,13 +40,17 @@ jobs:
         nbgv get-version
         VERSION=$(nbgv get-version -v SimpleVersion)
         echo "##vso[task.setvariable variable=VERSION]$VERSION"
-        git config user.name "github-actions"
-        git config user.email "github-actions@github.com"
-        git tag "v$VERSION"
-        git push origin --tags
 
     - name: Pack NuGet package
       run: dotnet pack --configuration Release /p:PackageVersion=${{ steps.bump_version.outputs.VERSION }} --output ./nupkg
 
     - name: Publish NuGet package
       run: dotnet nuget push ./nupkg/*.nupkg -k ${{ secrets.NUGET_API_KEY }} -s https://api.nuget.org/v3/index.json
+
+    - name: Create tag
+      run: |
+        git config user.name "github-actions"
+        git config user.email "github-actions@github.com"
+        git tag "v$VERSION"
+        git push origin --tags
+      
