@@ -1,0 +1,17 @@
+{
+  "version": "1.0-alpha.{height}",
+  "publicReleaseRefSpec": [
+    "^refs/heads/main$",
+    "^refs/tags/v\\d+\\.\\d+"
+  ],
+  "cloudBuild": {
+    "buildNumber": {
+      "enabled": true
+    },
+    "buildVariables": {
+      "version": {
+        "enabled": true
+      }
+    }
+  }
+}
