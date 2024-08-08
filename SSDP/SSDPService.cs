@@ -1,8 +1,3 @@
-using System.Diagnostics;
-using System.Net;
-using System.Net.Sockets;
-using System.Text;
-
 namespace Funnyppt.Net.SSDP;
 
 // see https://en.wikipedia.org/wiki/Simple_Service_Discovery_Protocol
