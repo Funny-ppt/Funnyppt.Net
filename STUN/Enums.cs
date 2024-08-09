@@ -133,7 +133,7 @@ public enum AttributeType : ushort {
     Mapped_Address = 0x0001,
     [Reserved] Response_Address = 0x0002,
     Change_Request = 0x0003,
-    [Reserved] Source_Address = 0x0004,
+    Source_Address = 0x0004,
     Changed_Address = 0x0005,
     Username = 0x0006,
     [Reserved] Password = 0x0007,
@@ -178,4 +178,10 @@ public enum NATType {
 public enum ChangeRequestFlag {
     ChangePort = 0x2,
     ChangeIP = 0x4,
+}
+
+public enum PackageHandleResult {
+    OK,
+    DiscardAndResend,
+    WaitTimeout,
 }

@@ -53,10 +53,13 @@ public sealed class STUNClient : IDisposable {
 
     public async Task<ParsedSTUNResponse> SendBindRequestAsync() {
         ParsedSTUNResponse? resp = null;
-        bool ValidateResponse(STUNResponse rawresp) {
+        PackageHandleResult ValidateResponse(STUNResponse rawresp) {
             resp = new(rawresp, Context);
             // TODO: Error Handle is incomplete
-            return resp.Success && resp.Valid && resp.Address != null;
+            if (resp.Success && resp.Valid && resp.Address != null) {
+                return PackageHandleResult.OK;
+            }
+            return PackageHandleResult.WaitTimeout;
         }
         IAttributeSetter[] attrs = Options.UseFingerprint ? [Fingerprint] : [];
         await SendAsync(STUNMethod.Binding, MessageClass.Request, attrs, ValidateResponse);
@@ -71,7 +74,7 @@ public sealed class STUNClient : IDisposable {
         return SendAsync(method, msgClass, attrs, null);
     }
 
-    public Task<STUNResponse> SendAsync(STUNMethod method, MessageClass msgClass, IAttributeSetter[] attrs, Func<STUNResponse, bool>? validator) {
+    public Task<STUNResponse> SendAsync(STUNMethod method, MessageClass msgClass, IAttributeSetter[] attrs, Func<STUNResponse, PackageHandleResult>? validator) {
         EnsureSocketAvaliable();
         return socket.SendAsync(Options, Context, method, msgClass, attrs, validator);
     }

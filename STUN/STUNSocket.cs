@@ -16,7 +16,7 @@ public sealed class STUNSocket : IDisposable {
         this.ownSocket = ownSocket;
     }
 
-    public Task<STUNResponse> SendAsync(STUNOptions options, STUNContext context, STUNMethod method, MessageClass msgClass, IAttributeSetter[] attrs, Func<STUNResponse, bool>? validator) {
+    public Task<STUNResponse> SendAsync(STUNOptions options, STUNContext context, STUNMethod method, MessageClass msgClass, IAttributeSetter[] attrs, Func<STUNResponse, PackageHandleResult>? validator) {
         STUNWriter writer = new() {
             Options = options,
             Context = context,
@@ -25,11 +25,12 @@ public sealed class STUNSocket : IDisposable {
         int len = writer.GetLength(attrs);
         byte[] buf = ArrayPool<byte>.Shared.Rent(len);
         writer.WriteAll(buf, len, method, msgClass, attrs);
-        // 缓冲区的所有权必须让渡给异步函数,将其放在同步函数的finally块会因为异步函数提前返回并回收,导致访问已被回收的区域
+        // 缓冲区的所有权必须让渡给异步函数,将其放在同步函数的finally块会因为异步函数提前返回并回收
+        // 导致访问已被回收的区域
         return SendAsyncImpl(buf, len, true, validator);
     }
 
-    private async Task<STUNResponse> SendAsyncImpl(byte[] bytesToSend, int length, bool isRented, Func<STUNResponse, bool>? validator) {
+    private async Task<STUNResponse> SendAsyncImpl(byte[] bytesToSend, int length, bool isRented, Func<STUNResponse, PackageHandleResult>? validator) {
         var timeout = STUN_RTO_MS;
         var retries = STUN_RETRIES;
         // STUNResponse直接使用原始缓冲区作为数据后端, 因此无需向ArrayPool借用
@@ -43,7 +44,11 @@ public sealed class STUNSocket : IDisposable {
                     var resp = STUNResponse.FromBytes(buf.AsMemory(0, bytesRead));
                     // validator 会显著拖慢该函数吗?
                     // TODO: validator返回一个值指示后续如何响应(立即退出?等待到下次超时?立刻重发请求?)
-                    if (validator == null || validator(resp)) return resp;
+                    var status = validator?.Invoke(resp) ?? PackageHandleResult.OK;
+                    if (status == PackageHandleResult.OK) return resp;
+                    if (status == PackageHandleResult.WaitTimeout) {
+                        await Task.Delay(timeout, cts.Token);
+                    }
                 } catch (OperationCanceledException) {
                     // TODO: logging?
                 }

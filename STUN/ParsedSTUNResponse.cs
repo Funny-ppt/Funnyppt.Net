@@ -45,9 +45,11 @@ public class ParsedSTUNResponse {
                 case AttributeType.Xor_Mapped_Address:
                     SetAddress(attr.GetXorMappedAddress(TranscationID.Span));
                     break;
+                case AttributeType.Source_Address:
                 case AttributeType.Response_Origin:
                     ServerOriginAddress = attr.GetMappedAddress();
                     break;
+                case AttributeType.Changed_Address:
                 case AttributeType.Other_Address:
                     ServerOtherAddress = attr.GetMappedAddress();
                     break;
@@ -57,6 +59,17 @@ public class ParsedSTUNResponse {
                     break;
                 case AttributeType.Fingerprint:
                     Valid &= attr.ValidateFingerprint(rawspan[..offset]);
+                    //if (!Valid) {
+                    //    var crc32 = System.IO.Hashing.Crc32.HashToUInt32(rawspan[..offset]);
+                    //    var xor_crc32 = crc32 ^ 0x5354554e;
+                    //    var readed_xor_crc32 = (uint)Util.ntohl(attr.ContentSpan);
+                    //    Console.WriteLine("Readed crc32: {0}", readed_xor_crc32);
+                    //    Console.WriteLine("Calculated crc32: {0}", xor_crc32);
+                    //    Console.WriteLine("Attributes:");
+                    //    foreach (var attr1 in resp.Attributes) {
+                    //        Console.WriteLine("{0} len: {1}", attr1.Name, attr1.ContentLength);
+                    //    }
+                    //}
                     break;
                 case AttributeType.Error_Code:
                     Success = false;
