@@ -124,7 +124,7 @@ public sealed class STUNClient : IDisposable {
                 break;
             }
             if (resp0.ServerOtherAddress == null
-                || resp0.ServerOtherAddress.Address.Equals(client.RemoteEndPoint)) {
+                || resp0.ServerOtherAddress.Address.Equals(client.RemoteEndPoint?.Address)) {
                 // Server not support RFC5780 or server doesnt have secondary ip address
                 continue;
             }
