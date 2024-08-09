@@ -89,7 +89,7 @@ public static class AttributeExtension {
     /// <param name="body">STUN消息从开头到Fingerprint属性之前的部分</param>
     public static bool ValidateFingerprint(this STUNAttribute attr, ReadOnlySpan<byte> body) {
         var crc32 = Crc32.HashToUInt32(body);
-        return (crc32 ^ FingerprintMagicNumber) == ntohl(attr.ContentSpan);
+        return (crc32 ^ FingerprintMagicNumber) == (uint)ntohl(attr.ContentSpan);
     }
 
     public static ErrorCode GetErrorCode(this STUNAttribute attr) {

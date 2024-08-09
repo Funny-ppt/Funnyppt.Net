@@ -15,6 +15,7 @@ public class ParsedSTUNResponse {
     public bool Valid { get; }
     public IPEndPoint? Address { get; }
     public IPEndPoint? ServerOriginAddress { get; }
+    public IPEndPoint? ServerOtherAddress { get; }
     public string? Nonce { get; }
     public string? Software { get; }
     public string? Realm { get; }
@@ -47,11 +48,13 @@ public class ParsedSTUNResponse {
                 case AttributeType.Response_Origin:
                     ServerOriginAddress = attr.GetMappedAddress();
                     break;
-                case AttributeType.Message_Integrity: {
-                        Valid &= attr.ValidateMessageIntegrity(
-                            rawspan[..offset], ctx.MessageIntegrityKey);
-                        break;
-                    }
+                case AttributeType.Other_Address:
+                    ServerOtherAddress = attr.GetMappedAddress();
+                    break;
+                case AttributeType.Message_Integrity:
+                    Valid &= attr.ValidateMessageIntegrity(
+                        rawspan[..offset], ctx.MessageIntegrityKey);
+                    break;
                 case AttributeType.Fingerprint:
                     Valid &= attr.ValidateFingerprint(rawspan[..offset]);
                     break;

@@ -36,4 +36,46 @@ internal static class Util {
             }
         }
     }
+
+    public static IPEndPoint ResolveFrom(string hostOrAddress, int defaultPort, AddressFamily addressFamily) {
+        if (hostOrAddress.Contains(':')) {
+            var splits = hostOrAddress.Split(':');
+            hostOrAddress = splits[0];
+            defaultPort = int.Parse(splits[1]);
+        }
+
+        IPAddress addr = Dns.GetHostAddresses(hostOrAddress, addressFamily).First();
+        return new(addr, defaultPort);
+    }
+}
+
+internal ref struct LocalArrayBuilder<T> {
+    int pos;
+    Span<T> buf;
+    T[]? rented;
+
+    public readonly int Capacity => buf.Length;
+
+    public LocalArrayBuilder(Span<T> buf) {
+        pos = 0;
+        this.buf = buf;
+    }
+    private void Grow(int length) {
+        var newBuf = ArrayPool<T>.Shared.Rent(length);
+        buf[..pos].CopyTo(newBuf);
+        buf = newBuf;
+        if (rented != null) {
+            ArrayPool<T>.Shared.Return(rented);
+        }
+        rented = newBuf;
+    }
+    public void Append(in T value) {
+        if (pos >= buf.Length) {
+            Grow(Capacity * 2);
+        }
+        buf[pos++] = value;
+    }
+    public readonly T[] ToArray() {
+        return buf[..pos].ToArray();
+    }
 }

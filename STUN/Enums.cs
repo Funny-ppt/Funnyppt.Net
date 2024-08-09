@@ -1,4 +1,22 @@
 namespace Funnyppt.Net.STUN;
+
+public static class EnumConverter {
+    public static AddressFamily ToAddressFamily(this IPFamily family) {
+        return family switch {
+            IPFamily.IPv4 => AddressFamily.InterNetwork,
+            IPFamily.IPv6 => AddressFamily.InterNetworkV6,
+            _ => throw new ArgumentException("unknown IP family", nameof(family)),
+        };
+    }
+    public static ProtocolType ToProtocolType(this STUNProtocolType protocolType) {
+        return protocolType switch {
+            STUNProtocolType.TCP => ProtocolType.Tcp,
+            STUNProtocolType.UDP => ProtocolType.Udp,
+            _ => throw new ArgumentException("unknown protocol type", nameof(protocolType)),
+        };
+    }
+}
+
 public enum IPFamily {
     IPv4 = 0x01,
     IPv6 = 0x02,
@@ -133,4 +151,31 @@ public enum AttributeType : ushort {
     Fingerprint = 0x8028,
     Response_Origin = 0x802b,
     Other_Address = 0x802c,
+}
+
+public enum NATMappingType {
+    EndpointIndependentMapping,
+    AddressDependentMapping,
+    AddressAndPortDependentMapping,
+    UnrecognizedMapping
+}
+
+public enum NATFilteringType {
+    EndpointIndependentFiltering,
+    AddressDependentFiltering,
+    AddressAndPortDependentFiltering,
+    UnrecognizedFiltering
+}
+
+public enum NATType {
+    FullCone,
+    AddressRestrictedCone,
+    PortRestrictedCone,
+    SymmetricNAT,
+}
+
+[Flags]
+public enum ChangeRequestFlag {
+    ChangePort = 0x2,
+    ChangeIP = 0x4,
 }
